@@ -316,7 +316,6 @@
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border-top: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 1.5rem 1.5rem 0 0;
         }
     </style>
 </head>
@@ -351,7 +350,7 @@
 
     <div id="main-content" class="container-wrapper opacity-0 invisible transition-opacity duration-700">
         <div class="container mx-auto p-4 sm:p-6 lg:p-8">
-            <header class="p-6 mb-8 border-b border-gray-200">
+            <header class="liquid-glass p-6 mb-8 rounded-3xl">
                 <div class="flex justify-end items-center text-sm text-gray-600 mb-4">
                     <div class="text-right">
                         <p class="font-bold">Projeto de Arquitetura V</p>
@@ -368,6 +367,7 @@
                 <button class="nav-button active text-lg font-semibold p-2 text-gray-700" data-target="overview">Visão Geral</button>
                 <button class="nav-button text-lg font-semibold p-2 text-gray-700" data-target="context">Análise de Contexto</button>
                 <button class="nav-button text-lg font-semibold p-2 text-gray-700" data-target="framework">Estrutura Normativa</button>
+                <button class="nav-button text-lg font-semibold p-2 text-gray-700" data-target="terrain">Terreno</button>
                 <button class="nav-button text-lg font-semibold p-2 text-gray-700" data-target="directives">Diretrizes de Projeto</button>
             </nav>
 
@@ -575,6 +575,45 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </section>
+                
+                 <section id="terrain" class="content-section">
+                    <div class="glass-card p-6">
+                        <h2 class="text-2xl font-bold text-center text-green-700 mb-4">Análise do Terreno</h2>
+                         <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">O terreno selecionado para a implantação do CMEI está localizado em Barra do Bugres, no bairro São Raimundo, na quadra entre as ruas Jauquara, Maranhão, Fabrini, e Aracaju.</p>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                            <div>
+                                <h3 class="font-bold text-lg text-center mb-2">Vista do Terreno</h3>
+                                <img src="imagens/terreno.png" alt="Vista geral do terreno" class="rounded-lg shadow-lg w-full h-auto">
+                            </div>
+                             <div>
+                                <h3 class="font-bold text-lg text-center mb-2">Entorno Urbano</h3>
+                                <img src="imagens/entorno do terreno.jpeg" alt="Vista do entorno urbano do terreno" class="rounded-lg shadow-lg w-full h-auto">
+                            </div>
+                        </div>
+                        <div>
+                             <h3 class="font-bold text-xl text-green-800 mb-4">Potencialidades e Desafios</h3>
+                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                                <div class="bg-green-50/50 p-4 rounded-lg">
+                                    <h4 class="font-bold text-green-700">Potencialidades:</h4>
+                                    <ul class="list-disc list-inside mt-2 space-y-1">
+                                        <li>Topografia predominantemente plana, facilitando a implantação.</li>
+                                        <li>Boa dimensão, permitindo a correta disposição do programa.</li>
+                                        <li>Vegetação de médio porte existente que pode ser aproveitada no projeto paisagístico.</li>
+                                        <li>Localizado em área urbana consolidada com infraestrutura.</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-amber-50/50 p-4 rounded-lg">
+                                    <h4 class="font-bold text-amber-700">Desafios:</h4>
+                                    <ul class="list-disc list-inside mt-2 space-y-1">
+                                        <li>Análise da orientação solar para garantir conforto térmico.</li>
+                                        <li>Garantir a segurança no acesso de pedestres e veículos.</li>
+                                        <li>Integração harmoniosa com a escala residencial do entorno.</li>
+                                    </ul>
+                                </div>
+                             </div>
                         </div>
                     </div>
                 </section>
