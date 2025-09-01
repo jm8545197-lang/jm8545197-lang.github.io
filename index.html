@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMEI Barra do Bugres - Análise de Projeto</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F9FA;
+            color: #343A40;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='3' stitchTiles='stitch' type='fractalNoise'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.07'/%3E%3C/svg%3E");
+            z-index: -2;
+        }
+        .background-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        .shape {
+            position: absolute;
+            opacity: 0.5;
+            filter: blur(128px);
+        }
+        .shape-1 {
+            width: 350px;
+            height: 350px;
+            background: #4ECDC4;
+            border-radius: 50%;
+            top: -80px;
+            left: -120px;
+        }
+        .shape-2 {
+            width: 450px;
+            height: 450px;
+            background: #FF6B6B;
+            border-radius: 50%;
+            bottom: -150px;
+            right: -200px;
+        }
+        .shape-3 {
+            width: 300px;
+            height: 300px;
+            background: #FFC107;
+            border-radius: 30%;
+            top: 25%;
+            right: 10%;
+        }
+         .shape-4 {
+            width: 250px;
+            height: 250px;
+            background: #56CCF2;
+            border-radius: 40%;
+            bottom: 35%;
+            left: 5%;
+        }
+        .container-wrapper {
+            flex-grow: 1;
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-button.active, .nav-button:hover {
+            border-bottom-color: #28A745;
+            color: #218838;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        .filter-btn {
+            background-color: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: #343A40;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+        }
+        .filter-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+        }
+        .filter-btn:not(.active):hover {
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 20px 8px rgba(255, 255, 255, 0.7);
+        }
+        .filter-btn.active {
+            background-color: #28A745;
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .filter-btn.active:hover {
+            background-color: #34d399;
+             box-shadow: 0 4px 15px rgba(0,0,0,0.2), 0 0 20px 5px rgba(52, 211, 153, 0.5);
+        }
+        .directive-card {
+            transition: all 0.3s ease-in-out;
+            border-radius: 1.5rem;
+        }
+        .directive-card:hover {
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 12px 20px rgba(40, 167, 69, 0.2);
+            border-color: #28A745;
+            cursor: pointer;
+        }
+        .glass-card {
+            background-color: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+            border-radius: 1.5rem;
+        }
+        .liquid-glass {
+            background-color: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 1.5rem;
+        }
+         .metric-card {
+            background-color: rgba(255, 255, 255, 0.36);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+            border-radius: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 0 25px 5px var(--glow-color);
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            width: 90%;
+            max-width: 800px;
+            padding: 2rem;
+            position: relative;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+         #metricModal .glass-card {
+            background-color: #ffffff;
+        }
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #343A40;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .splash-container {
+            perspective: 1000px;
+        }
+        .splash-card {
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            animation: splashFloat 1.2s ease-in-out;
+            background-color: rgba(248, 249, 250, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: -12px -12px 24px rgba(255, 255, 255, 0.8), 12px 12px 24px rgba(0, 0, 0, 0.15);
+        }
+        @keyframes splashFloat {
+            from {
+                transform: rotateX(15deg) rotateY(-10deg) translateZ(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: rotateX(0) rotateY(0) translateZ(0);
+                opacity: 1;
+            }
+        }
+        .splash-shape {
+            content: '';
+            position: absolute;
+            z-index: 1;
+            filter: blur(32px);
+            opacity: 0.15;
+        }
+        .splash-shape-1 {
+            width: 200px;
+            height: 200px;
+            background-color: #4ECDC4;
+            border-radius: 50%;
+            top: -60px;
+            left: -60px;
+        }
+        .splash-shape-2 {
+            width: 180px;
+            height: 180px;
+            background-color: #FFC107;
+            bottom: -70px;
+            right: -70px;
+            transform: rotate(45deg);
+        }
+        #enter-btn {
+            animation: pulse 2.5s infinite;
+        }
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2), 0 0 0 0 rgba(20, 184, 166, 0.7);
+            }
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2), 0 0 0 25px rgba(20, 184, 166, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2), 0 0 0 0 rgba(20, 184, 166, 0);
+            }
+        }
+        .debossed-card {
+            background-color: rgba(220, 220, 220, 0.2);
+            border-radius: 1rem;
+            padding: 1rem;
+            box-shadow: inset 3px 3px 7px rgba(0,0,0,0.1), inset -3px -3px 7px rgba(255,255,255,0.7);
+        }
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+    </div>
+    
+    <div id="splash-screen" class="fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-700">
+        <div class="splash-container">
+            <div class="splash-card p-10 text-center rounded-[3rem] max-w-lg w-full mx-4">
+                <div class="splash-shape splash-shape-1"></div>
+                <div class="splash-shape splash-shape-2"></div>
+                <div class="relative z-10 flex flex-col items-center">
+                    <h1 class="text-3xl sm:text-4xl font-bold text-green-800">Estudo para CMEI em Barra do Bugres</h1>
+                    <p class="text-md sm:text-lg text-gray-600 mt-2 mb-8">Atividade de Projeto Arquitetônico V</p>
+                    <div class="space-y-2 text-gray-700">
+                        <p class="font-semibold">João Miguel F. Silva</p>
+                        <p class="font-semibold">Otávio Henrique S. Mendes</p>
+                    </div>
+                    <button id="enter-btn" class="mt-10 bg-gradient-to-br from-green-400 to-teal-500 text-white font-bold text-2xl rounded-full w-48 h-48 sm:w-56 sm:h-56 flex items-center justify-center text-center transition-all duration-300 transform shadow-lg">
+                        Começar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-content" class="container-wrapper opacity-0 invisible transition-opacity duration-700">
+        <div class="container mx-auto p-4 sm:p-6 lg:p-8 pb-32">
+            <header class="liquid-glass p-6 mb-8 rounded-3xl">
+                <div class="flex justify-end items-center text-sm text-gray-600 mb-4">
+                    <div class="text-right">
+                        <p class="font-bold">Projeto de Arquitetura V</p>
+                        <p>Período Letivo: 2025/1</p>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <h1 class="text-4xl font-bold text-green-800">Estudo para CMEI em Barra do Bugres</h1>
+                    <p class="text-lg text-gray-600 mt-2">Plataforma de Análise para a Atividade de Projeto Arquitetônico</p>
+                </div>
+            </header>
+
+            <nav class="flex flex-wrap justify-center gap-4 sm:gap-6 mb-8">
+                <button class="nav-button active text-lg font-semibold p-2 text-gray-700" data-target="overview">Visão Geral</button>
+                <button class="nav-button text-lg font-semibold p-2 text-gray-700" data-target="context">Análise de Contexto</button>
+                <button class="nav-button text-lg font-semibold p-2 text-gray-700" data-target="framework">Estrutura Normativa</button>
+                <button class="nav-button text-lg font-semibold p-2 text-gray-700" data-target="directives">Diretrizes de Projeto</button>
+            </nav>
+
+            <main>
+                <section id="overview" class="content-section active">
+                     <div class="glass-card p-6 mb-8">
+                        <h2 class="text-2xl font-bold text-center text-green-700 mb-4">Escopo da Atividade de Projeto</h2>
+                        <p class="text-center text-gray-600 max-w-3xl mx-auto">
+                            Esta plataforma sintetiza a fase de levantamento de dados para a atividade de Projeto Arquitetônico V. O objetivo deste exercício é desenvolver uma proposta de anteprojeto para um CMEI em Barra do Bugres. Embora os parâmetros do Proinfância Tipo B sirvam como referência inicial, <span class="font-bold">o foco principal deste trabalho é a análise crítica e o desenvolvimento aprofundado do programa de necessidades</span>, adequando-o ao contexto local e às mais recentes diretrizes pedagógicas.
+                        </p>
+                        <div class="text-center mt-6">
+                            <button id="goToPhasesBtn" class="bg-green-600 text-white font-bold py-2 px-6 rounded-full hover:bg-green-700 transition-colors shadow-md">
+                                Explorar Etapas da Atividade →
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-8">
+                        <h3 class="text-2xl font-bold text-center text-green-700 mb-6">Parâmetros de Projeto (Referência Inicial)</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                            <div class="glass-card p-6">
+                                <p class="text-3xl font-bold text-green-700">188</p>
+                                <p class="text-gray-600 font-semibold mt-1">Crianças Atendidas</p>
+                            </div>
+                            <div class="glass-card p-6">
+                                <p class="text-3xl font-bold text-green-700">~1.320 m²</p>
+                                <p class="text-gray-600 font-semibold mt-1">Área Construída</p>
+                            </div>
+                            <div class="glass-card p-6">
+                                <p class="text-3xl font-bold text-green-700">Tipo B</p>
+                                <p class="text-gray-600 font-semibold mt-1">Modelo Proinfância</p>
+                            </div>
+                            <div class="glass-card p-6">
+                                <p class="text-3xl font-bold text-green-700">0 a 5</p>
+                                <p class="text-gray-600 font-semibold mt-1">Faixa Etária (Anos)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 mb-8">
+                        <h3 class="text-2xl font-bold text-center text-green-700 mb-6">Objetivos da Atividade Acadêmica</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div class="text-center p-4">
+                                <span class="text-5xl">📜</span>
+                                <h4 class="font-bold text-lg mt-3">Aplicar Normativas</h4>
+                                <p class="text-gray-600 text-sm">Estudar e aplicar a legislação e as normas técnicas pertinentes ao tema.</p>
+                            </div>
+                            <div class="text-center p-4">
+                                <span class="text-5xl">☀️</span>
+                                <h4 class="font-bold text-lg mt-3">Solução Bioclimática</h4>
+                                <p class="text-gray-600 text-sm">Desenvolver uma proposta arquitetônica adequada às condições climáticas locais.</p>
+                            </div>
+                            <div class="text-center p-4">
+                                <span class="text-5xl">🧩</span>
+                                <h4 class="font-bold text-lg mt-3">Funcionalidade Pedagógica</h4>
+                                <p class="text-gray-600 text-sm">Criar espaços que atendam com excelência ao programa de necessidades infantil.</p>
+                            </div>
+                            <div class="text-center p-4">
+                                <span class="text-5xl">✒️</span>
+                                <h4 class="font-bold text-lg mt-3">Representação Gráfica</h4>
+                                <p class="text-gray-600 text-sm">Exercitar a representação técnica e gráfica de um anteprojeto arquitetônico.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                        <div class="glass-card p-6">
+                            <h3 class="text-2xl font-bold text-green-700 mb-4">Usuário do Projeto e Impacto Simulado</h3>
+                            <p class="text-gray-600 mb-4">O projeto é concebido para a primeira infância, fase crucial para o desenvolvimento. O impacto simulado na comunidade é a criação de um referencial de arquitetura educacional de qualidade, que valoriza o espaço urbano e o bem-estar social.</p>
+                            <div class="mt-4 pt-4 border-t border-white/30">
+                                 <h4 class="font-semibold text-gray-700">Usuários Considerados no Projeto:</h4>
+                                 <ul class="list-disc list-inside text-gray-600 space-y-1 mt-2">
+                                     <li>Crianças de 0 a 5 anos</li>
+                                     <li>Professores e equipe pedagógica</li>
+                                     <li>Pais e responsáveis</li>
+                                 </ul>
+                            </div>
+                        </div>
+                        <div class="glass-card p-6">
+                             <h3 class="text-2xl font-bold text-center text-green-700 mb-4">Distribuição por Faixa Etária</h3>
+                             <div class="chart-container" style="height: 280px;">
+                                <canvas id="targetAudienceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="context" class="content-section">
+                    <div class="glass-card p-6 mb-8">
+                        <h2 class="text-2xl font-bold text-green-700 mb-2">Contexto Bioclimático</h2>
+                        <p class="text-gray-600 mb-6">Barra do Bugres está na Zona Bioclimática 7, com clima quente e úmido (Aw). A análise detalhada dos dados mensais revela uma estação seca bem definida no meio do ano e uma estação chuvosa no verão. Clique em uma métrica para ver a variação anual.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                            <div class="metric-card p-4" data-metric="temp" style="--glow-color: rgba(239, 68, 68, 0.5);">
+                                <p class="text-4xl">🌡️</p>
+                                <p class="text-2xl font-bold text-red-500 mt-2">32°C</p>
+                                <p class="text-gray-600 font-semibold">Média das Máximas</p>
+                            </div>
+                            <div class="metric-card p-4" data-metric="humidity" style="--glow-color: rgba(59, 130, 246, 0.5);">
+                                <p class="text-4xl">💧</p>
+                                <p class="text-2xl font-bold text-blue-500 mt-2">~75%</p>
+                                <p class="text-gray-600 font-semibold">Média Anual de Umidade</p>
+                            </div>
+                            <div class="metric-card p-4" data-metric="precip" style="--glow-color: rgba(99, 102, 241, 0.5);">
+                                <p class="text-4xl">🌧️</p>
+                                <p class="text-2xl font-bold text-indigo-500 mt-2">1534mm</p>
+                                <p class="text-gray-600 font-semibold">Precipitação Total Anual</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-card p-6">
+                        <h2 class="text-2xl font-bold text-green-700 mb-4">Contexto Urbano e Legal</h2>
+                        <p class="text-gray-600 mb-6">A implantação do CMEI deve seguir o <span class="font-semibold">Plano Diretor de Barra do Bugres (LC Nº 012/2006)</span>, que rege o uso e ocupação do solo, garantindo que o projeto se harmonize com o desenvolvimento urbano planejado.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="bg-green-50/50 p-4 rounded-lg border border-green-200/50">
+                                <h3 class="font-bold text-green-800">🗺️ Zoneamento e Uso</h3>
+                                <p class="text-sm text-green-700">Verificar a conformidade com a zona urbana designada e os usos permitidos.</p>
+                            </div>
+                            <div class="bg-green-50/50 p-4 rounded-lg border border-green-200/50">
+                                <h3 class="font-bold text-green-800">📏 Recuos e Ocupação</h3>
+                                <p class="text-sm text-green-700">Respeitar os afastamentos e a taxa de ocupação máxima do lote.</p>
+                            </div>
+                            <div class="bg-green-50/50 p-4 rounded-lg border border-green-200/50">
+                                <h3 class="font-bold text-green-800">🏗️ Infraestrutura</h3>
+                                <p class="text-sm text-green-700">Garantir acesso a redes de água, esgoto, energia e vias pavimentadas.</p>
+                            </div>
+                            <div class="bg-green-50/50 p-4 rounded-lg border border-green-200/50">
+                                <h3 class="font-bold text-green-800">🚗 Sistema Viário</h3>
+                                <p class="text-sm text-green-700">Analisar a integração com as vias locais, prevendo acessos seguros para pedestres e veículos.</p>
+                            </div>
+                        </div>
+                         <p class="text-xs italic text-center text-gray-500 mt-6 p-2 bg-amber-50/80 rounded-md border border-amber-200/50"><span class="font-bold">Nota para a professora:</span> Apesar da consulta ao Plano Diretor (LC Nº 012/2006), não foram localizados os anexos ou leis complementares (como Código de Obras ou Lei de Uso e Ocupação do Solo) que especificam os índices urbanísticos quantitativos (recuos, taxa de ocupação, etc.). Para o desenvolvimento da atividade, serão adotados parâmetros de referência com base em legislações de municípios de porte similar.</p>
+                    </div>
+                </section>
+
+                <section id="framework" class="content-section">
+                    <div class="glass-card p-6 mb-8">
+                        <h2 class="text-2xl font-bold text-green-700 mb-4">Hierarquia Normativa</h2>
+                        <p class="text-gray-600 mb-6">
+                            O projeto é regido por um conjunto de normas em diferentes esferas. Este gráfico ilustra a influência relativa de cada conjunto de diretrizes no desenvolvimento do projeto.
+                        </p>
+                        <div class="chart-container" style="height: 400px;">
+                            <canvas id="frameworkChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="glass-card p-6">
+                        <h2 class="text-2xl font-bold text-green-700 mb-4">Programa de Necessidades Detalhado (Base FNDE)</h2>
+                        <p class="text-gray-600 mb-6">
+                           A distribuição de áreas segue o programa funcional do Proinfância. O gráfico de rosca mostra a proporção de cada ambiente na área total de referência (~1.320 m²).
+                        </p>
+                        <div class="md:flex items-center">
+                            <div class="chart-container flex-shrink-0" style="height: 400px; max-width: 400px;">
+                                <canvas id="programChart"></canvas>
+                            </div>
+                            <div id="program-legend" class="flex-grow mt-6 md:mt-0 md:ml-6 text-xs space-y-1"></div>
+                        </div>
+                        <p class="text-xs italic text-center text-gray-500 mt-8"><span class="font-bold">Nota para a professora:</span> O programa do FNDE é utilizado como base referencial. A atividade de projeto se concentrará na análise e detalhamento deste programa para desenvolver uma solução arquitetônica que responda criticamente às suas diretrizes.</p>
+                    </div>
+                </section>
+                
+                <section id="phases" class="content-section">
+                    <div class="glass-card p-6">
+                        <h2 class="text-2xl font-bold text-center text-green-700 mb-8">Etapas da Atividade de Projeto Arquitetônico</h2>
+                        <div class="space-y-4 max-w-3xl mx-auto">
+                            <div>
+                                <button class="timeline-btn w-full text-left p-4 rounded-lg flex justify-between items-center" data-target="phase-content-1">
+                                    <span class="text-xl font-bold flex items-center"><span class="bg-green-700 text-white rounded-full h-8 w-8 flex items-center justify-center mr-4">1</span> Análise e Planejamento</span>
+                                    <span class="text-2xl transform transition-transform duration-300 ">+</span>
+                                </button>
+                                <div id="phase-content-1" class="timeline-content">
+                                    <div class="debossed-card mt-2">
+                                        <p class="text-sm text-gray-600">Levantamento de dados, estudo da legislação, análise climática e do programa de necessidades.</p>
+                                    </div>
+                                </div>
+                            </div>
+                             <div>
+                                <button class="timeline-btn w-full text-left p-4 rounded-lg flex justify-between items-center" data-target="phase-content-2">
+                                    <span class="text-xl font-bold flex items-center"><span class="bg-green-700 text-white rounded-full h-8 w-8 flex items-center justify-center mr-4">2</span> Apresentação e Síntese dos Dados</span>
+                                    <span class="text-2xl transform transition-transform duration-300 ">+</span>
+                                </button>
+                                <div id="phase-content-2" class="timeline-content">
+                                    <div class="debossed-card mt-2">
+                                        <p class="text-sm text-gray-600">Organização e visualização dos dados coletados para embasar as decisões. O resultado é esta plataforma interativa.</p>
+                                    </div>
+                                </div>
+                            </div>
+                             <div>
+                                <button class="timeline-btn w-full text-left p-4 rounded-lg flex justify-between items-center" data-target="phase-content-3">
+                                    <span class="text-xl font-bold flex items-center"><span class="bg-green-700 text-white rounded-full h-8 w-8 flex items-center justify-center mr-4">3</span> Análises Correlatas e Partido</span>
+                                    <span class="text-2xl transform transition-transform duration-300 ">+</span>
+                                </button>
+                                <div id="phase-content-3" class="timeline-content">
+                                    <div class="debossed-card mt-2">
+                                        <p class="text-sm text-gray-600">Cruzamento das informações para gerar o conceito, as estratégias de projeto e a solução formal inicial.</p>
+                                    </div>
+                                </div>
+                            </div>
+                             <div>
+                                <button class="timeline-btn w-full text-left p-4 rounded-lg flex justify-between items-center" data-target="phase-content-4">
+                                    <span class="text-xl font-bold flex items-center"><span class="bg-green-700 text-white rounded-full h-8 w-8 flex items-center justify-center mr-4">4</span> Desenvolvimento do Anteprojeto</span>
+                                    <span class="text-2xl transform transition-transform duration-300 ">+</span>
+                                </button>
+                                <div id="phase-content-4" class="timeline-content">
+                                    <div class="debossed-card mt-2">
+                                        <p class="text-sm text-gray-600">Materialização do partido arquitetônico em desenhos técnicos, representando a solução projetual preliminar.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="directives" class="content-section">
+                    <div class="glass-card p-6">
+                        <h2 class="text-2xl font-bold text-green-700 mb-2">Diretrizes Consolidadas de Projeto</h2>
+                        <p class="text-gray-600 mb-6">
+                            Explore as principais recomendações para o desenvolvimento do projeto, sintetizadas a partir da análise de contexto e da estrutura normativa. Use os filtros para navegar pelas diferentes categorias de diretrizes.
+                        </p>
+                        <div class="flex flex-wrap justify-center gap-3 mb-8" id="filter-container">
+                            <button class="filter-btn active" data-filter="all">Todas</button>
+                            <button class="filter-btn" data-filter="bioclimatic">Bioclimáticas</button>
+                            <button class="filter-btn" data-filter="accessibility">Acessibilidade</button>
+                            <button class="filter-btn" data-filter="safety">Segurança</button>
+                            <button class="filter-btn" data-filter="pedagogical">Pedagógicas</button>
+                        </div>
+
+                        <div id="directives-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="directive-card p-4 border rounded-lg" data-category="bioclimatic">
+                                <h3 class="font-bold text-lg">🌬️ Ventilação Cruzada</h3>
+                                <p class="text-gray-600">Maximizar a ventilação natural em todos os ambientes, especialmente nas salas de aula e pátio coberto.</p>
+                            </div>
+                            <div class="directive-card p-4 border rounded-lg" data-category="accessibility">
+                                <h3 class="font-bold text-lg">♿ Rota Acessível</h3>
+                                <p class="text-gray-600">Garantir uma rota contínua e acessível da entrada a todas as áreas de uso comum e pedagógico, conforme NBR 9050.</p>
+                            </div>
+                            <div class="directive-card p-4 border rounded-lg" data-category="safety">
+                                <h3 class="font-bold text-lg">🔥 Saídas de Emergência</h3>
+                                <p class="text-gray-600">Dimensionar e sinalizar corretamente as rotas de fuga e saídas de emergência, conforme NBR 9077.</p>
+                            </div>
+                            <div class="directive-card p-4 border rounded-lg" data-category="bioclimatic">
+                                <h3 class="font-bold text-lg">☀️ Proteção Solar</h3>
+                                <p class="text-gray-600">Utilizar beirais generosos, brises e vegetação para proteger as fachadas e aberturas da insolação direta.</p>
+                            </div>
+                             <div class="directive-card p-4 border rounded-lg" data-category="pedagogical">
+                                <h3 class="font-bold text-lg">🎨 Espaços Flexíveis</h3>
+                                <p class="text-gray-600">Projetar salas de atividades que permitam diferentes arranjos de layout para múltiplas atividades pedagógicas.</p>
+                            </div>
+                            <div class="directive-card p-4 border rounded-lg" data-category="accessibility">
+                                <h3 class="font-bold text-lg">🚽 Sanitários Adaptados</h3>
+                                <p class="text-gray-600">Prever sanitários acessíveis para crianças e adultos em todos os blocos funcionais.</p>
+                            </div>
+                             <div class="directive-card p-4 border rounded-lg" data-category="safety">
+                                <h3 class="font-bold text-lg">🛡️ Materiais Seguros</h3>
+                                <p class="text-gray-600">Especificar materiais de acabamento atóxicos, de fácil limpeza e que não propaguem chamas.</p>
+                            </div>
+                            <div class="directive-card p-4 border rounded-lg" data-category="pedagogical">
+                                <h3 class="font-bold text-lg">🌳 Integração Interior-Exterior</h3>
+                                <p class="text-gray-600">Promover a conexão visual e física entre as salas de aula e os espaços externos (solários e parquinhos).</p>
+                            </div>
+                             <div class="directive-card p-4 border rounded-lg" data-category="bioclimatic">
+                                <h3 class="font-bold text-lg">💧 Cobertura e Drenagem</h3>
+                                <p class="text-gray-600">Projetar coberturas com bom isolamento térmico e um sistema de drenagem pluvial eficiente para chuvas intensas.</p>
+                            </div>
+                             <div class="directive-card p-4 border rounded-lg" data-category="pedagogical">
+                                <h3 class="font-bold text-lg">🤸 Psicomotricidade</h3>
+                                <p class="text-gray-600">Criar áreas com desafios motores (subir, descer, equilibrar) para desenvolver a coordenação e consciência corporal.</p>
+                            </div>
+                            <div class="directive-card p-4 border rounded-lg" data-category="pedagogical">
+                                <h3 class="font-bold text-lg">🎨 Exploração Sensorial</h3>
+                                <p class="text-gray-600">Incluir painéis com diferentes texturas, jardins de cheiros e caixas de areia para estimular os múltiplos sentidos.</p>
+                            </div>
+                            <div class="directive-card p-4 border rounded-lg" data-category="pedagogical">
+                                <h3 class="font-bold text-lg">🌱 Horta Pedagógica</h3>
+                                <p class="text-gray-600">Destinar um espaço para uma pequena horta, ensinando sobre natureza, alimentação e responsabilidade.</p>
+                            </div>
+                            <div class="directive-card p-4 border rounded-lg" data-category="pedagogical">
+                                <h3 class="font-bold text-lg">💧 Brincadeiras com Água</h3>
+                                <p class="text-gray-600">Projetar uma área externa segura com pontos de água para atividades lúdicas e sensoriais nos dias quentes.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="references" class="content-section">
+                    <div class="glass-card p-6">
+                        <h2 class="text-2xl font-bold text-center text-green-700 mb-6">Referências Bibliográficas e Normativas</h2>
+                        <ul class="space-y-4 text-gray-700 max-w-3xl mx-auto text-sm">
+                            <li class="p-4 bg-white/50 rounded-lg break-words"><span class="font-bold block">ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS.</span> NBR 15220: Desempenho térmico de edificações. Rio de Janeiro, 2005.</li>
+                            <li class="p-4 bg-white/50 rounded-lg break-words"><span class="font-bold block">ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS.</span> NBR 9050: Acessibilidade a edificações, mobiliário, espaços e equipamentos urbanos. Rio de Janeiro, 2020.</li>
+                            <li class="p-4 bg-white/50 rounded-lg break-words"><span class="font-bold block">ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS.</span> NBR 9077: Saídas de emergência em edifícios. Rio de Janeiro, 2001.</li>
+                            <li class="p-4 bg-white/50 rounded-lg break-words"><span class="font-bold block">BARRA DO BUGRES. Prefeitura Municipal.</span> Lei Complementar Nº 012/2006. Institui o Plano Diretor de Barra do Bugres e dá outras providências. Barra do Bugres, MT, 2006.</li>
+                            <li class="p-4 bg-white/50 rounded-lg break-words"><span class="font-bold block">BRASIL. Ministério da Educação. Fundo Nacional de Desenvolvimento da Educação (FNDE).</span> Caderno de Projetos – Proinfância. Brasília: FNDE, 2012.</li>
+                            <li class="p-4 bg-white/50 rounded-lg break-words"><span class="font-bold block">BRASIL. Ministério da Educação. Fundo Nacional de Desenvolvimento da Educação (FNDE).</span> Ações e Programas: Proinfância. Disponível em: <a href="https://www.gov.br/fnde/pt-br/acesso-a-informacao/acoes-e-programas/programas/proinfancia" target="_blank" class="text-green-700 hover:underline break-all">https://www.gov.br/fnde/pt-br/acesso-a-informacao/acoes-e-programas/programas/proinfancia</a>. Acesso em: 30 ago. 2025.</li>
+                            <li class="p-4 bg-white/50 rounded-lg break-words"><span class="font-bold block">BRASIL. Ministério da Educação. Fundo Nacional de Desenvolvimento da Educação (FNDE).</span> Projeto de Transposição - Tipo B. Metodologias Inovadoras. Disponível em: <a href="https://www.gov.br/fnde/pt-br/acesso-a-informacao/acoes-e-programas/programas/proinfancia/metodologias-inovadoras-mi/projeto-de-transposicao-tipo-b" target="_blank" class="text-green-700 hover:underline break-all">https://www.gov.br/fnde/pt-br/acesso-a-informacao/acoes-e-programas/programas/proinfancia/metodologias-inovadoras-mi/projeto-de-transposicao-tipo-b</a>. Acesso em: 30 ago. 2025.</li>
+                            <li class="p-4 bg-white/50 rounded-lg break-words"><span class="font-bold block">BRASIL. Ministério da Educação. Fundo Nacional de Desenvolvimento da Educação (FNDE).</span> Orientações para preenchimento no SIMEC da solicitação de construção de creches dos Tipos B e C. Disponível em: <a href="https://www.fnde.gov.br/phocadownload/programas/pro_infancia/Manuais/orientacoes_preenchimento_simec_solicitacao_creches_tipos_bc_mi.pdf" target="_blank" class="text-green-700 hover:underline break-all">https://www.fnde.gov.br/phocadownload/programas/pro_infancia/Manuais/orientacoes_preenchimento_simec_solicitacao_creches_tipos_bc_mi.pdf</a>. Acesso em: 30 ago. 2025.</li>
+                            <li class="p-4 bg-white/50 rounded-lg break-words"><span class="font-bold block">BRASIL. Ministério da Educação. Conselho Nacional de Educação.</span> Resolução CNE/CEB nº 5, de 17 de dezembro de 2009. Fixa as Diretrizes Curriculares Nacionais para a Educação Infantil. Diário Oficial da União, Brasília, 18 de dezembro de 2009.</li>
+                            <li class="p-4 bg-white/50 rounded-lg break-words"><span class="font-bold block">BRASIL. Ministério da Educação. Conselho Nacional de Educação.</span> Resolução CNE/CEB Nº 1, de 17 de outubro de 2024. Institui as Diretrizes Curriculares Nacionais para a Formação Inicial de Professores da Educação Infantil. Disponível em: <a href="https://abmes.org.br/arquivos/legislacoes/Resolucao-cne-ceb-001-2024-10-17.pdf" target="_blank" class="text-green-700 hover:underline break-all">https://abmes.org.br/arquivos/legislacoes/Resolucao-cne-ceb-001-2024-10-17.pdf</a>. Acesso em: 30 ago. 2025.</li>
+                            <li class="p-4 bg-white/50 rounded-lg break-words"><span class="font-bold block">CLIMATE-DATA.ORG.</span> Clima Barra do Bugres. Dados climatológicos para Barra do Bugres. Acesso em: 30 ago. 2025.</li>
+                             <li class="p-4 bg-white/50 rounded-lg break-words"><span class="font-bold block">MIRANDA, Soneize Auxiliadora de.</span> Material da disciplina de Projeto de Arquitetura V (A1-PA5-ATIVIDADES-TEMAS_E_GRUPOS-2025-1). UNEMAT, Barra do Bugres, 2025.</li>
+                        </ul>
+                    </div>
+                </section>
+            </main>
+
+        </div>
+
+        <footer class="liquid-glass mt-8 py-4 rounded-t-3xl">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                <div class="text-gray-600">
+                    <p class="font-bold text-lg">UNEMAT - BBG</p>
+                    <p class="text-xs italic">Campus Carlos Alberto Reys Maldonado</p>
+                </div>
+                <div class="text-right text-sm text-gray-500">
+                    <div>
+                        <p class="font-semibold">João Miguel F. Silva</p>
+                        <p class="font-semibold">Otávio Henrique S. Mendes</p>
+                    </div>
+                    <button id="referencesBtn" class="mt-2 text-xs font-bold text-green-700 hover:underline">Referências</button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+
+    <div id="metricModal" class="modal-overlay">
+        <div class="modal-content glass-card">
+            <span id="modalCloseBtn" class="modal-close">&times;</span>
+            <h2 id="modalTitle" class="text-2xl font-bold text-center text-green-700 mb-6"></h2>
+            <div class="chart-container" style="height: 400px;">
+                <canvas id="modalChartCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const enterBtn = document.getElementById('enter-btn');
+            const splashScreen = document.getElementById('splash-screen');
+            const mainContent = document.getElementById('main-content');
+            
+            enterBtn.addEventListener('click', () => {
+                splashScreen.style.opacity = '0';
+                splashScreen.style.visibility = 'hidden';
+                mainContent.style.opacity = '1';
+                mainContent.style.visibility = 'visible';
+                setTimeout(() => {
+                    splashScreen.style.display = 'none';
+                }, 700);
+            });
+
+            const navButtons = document.querySelectorAll('.nav-button');
+            const contentSections = document.querySelectorAll('.content-section');
+            const referencesBtn = document.getElementById('referencesBtn');
+
+            function switchTab(targetId) {
+                // Desativa todos os botões da navegação principal
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // Ativa o botão correspondente se ele existir na navegação principal
+                const targetNavButton = document.querySelector(`.nav-button[data-target="${targetId}"]`);
+                if(targetNavButton){
+                    targetNavButton.classList.add('active');
+                }
+
+                contentSections.forEach(section => {
+                    if (section.id === targetId) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetId = button.getAttribute('data-target');
+                    switchTab(targetId);
+                });
+            });
+            
+            const goToPhasesBtn = document.getElementById('goToPhasesBtn');
+            if(goToPhasesBtn) {
+                goToPhasesBtn.addEventListener('click', () => {
+                    switchTab('phases');
+                });
+            }
+            
+            if(referencesBtn) {
+                referencesBtn.addEventListener('click', () => {
+                    switchTab('references');
+                });
+            }
+
+            const filterContainer = document.getElementById('filter-container');
+            if (filterContainer) {
+                const filterButtons = filterContainer.querySelectorAll('.filter-btn');
+                const directiveCards = document.querySelectorAll('.directive-card');
+                
+                filterButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        filterButtons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                        const filter = button.getAttribute('data-filter');
+                        directiveCards.forEach(card => {
+                            card.style.display = (filter === 'all' || card.getAttribute('data-category') === filter) ? 'block' : 'none';
+                        });
+                    });
+                });
+            }
+
+            const FONT_COLOR = '#343A40';
+            const GRID_COLOR = '#E9ECEF';
+
+            const tooltipConfig = {
+                callbacks: {
+                    title: function(tooltipItems) {
+                        const item = tooltipItems[0];
+                        let label = item.chart.data.labels[item.dataIndex];
+                        return Array.isArray(label) ? label.join(' ') : label;
+                    }
+                }
+            };
+            
+            const processLabels = (labels, maxLength = 16) => {
+                return labels.map(label => {
+                    if(typeof label !== 'string' || label.length <= maxLength) return label;
+                    const words = label.split(' ');
+                    const lines = [];
+                    let currentLine = '';
+                    words.forEach(word => {
+                        if ((currentLine + ' ' + word).trim().length > maxLength) {
+                            lines.push(currentLine.trim());
+                            currentLine = word;
+                        } else {
+                            currentLine = (currentLine + ' ' + word).trim();
+                        }
+                    });
+                    if (currentLine) lines.push(currentLine.trim());
+                    return lines;
+                });
+            };
+
+            if (document.getElementById('frameworkChart')) {
+                new Chart(document.getElementById('frameworkChart'), {
+                    type: 'bar',
+                    data: {
+                         labels: processLabels(['Normas ABNT', 'Diretrizes FNDE/MEC', 'Plano Diretor', 'Legislação Incêndio']),
+                        datasets: [{ 
+                            label: 'Nível de Influência',
+                            data: [35, 30, 25, 10], 
+                            backgroundColor: ['#2d6a4f', '#40916c', '#52b788', '#74c69d'],
+                            borderRadius: 4
+                        }]
+                    },
+                    options: { 
+                        indexAxis: 'y',
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        plugins: { legend: { display: false }, tooltip: tooltipConfig },
+                        scales: { x: { grid: { color: GRID_COLOR } } } 
+                    }
+                });
+            }
+            
+            const programChartCanvas = document.getElementById('programChart');
+            if (programChartCanvas) {
+                const programData = {
+                    labels: ['Pátio/Refeitório', 'Salas Creche I', 'Salas Creche II', 'Salas Pré-Escola', 'Sala Multiuso', 'Solários', 'Parquinho', 'Cozinha', 'Lavanderia', 'Outros (Adm/Apoio)'],
+                    datasets: [{ 
+                        label: 'Área (m²)', 
+                        data: [228.7, 114.88, 102.32, 110.16, 49.50, 150, 200, 29.81, 19.34, 115.29],
+                        backgroundColor: ['#2d6a4f', '#40916c', '#52b788', '#74c69d', '#95d5b2', '#ade8f4', '#80ced7', '#48cae4', '#00b4d8', '#0096c7'].map(color => color + 'b3'),
+                        borderColor: 'rgba(255, 255, 255, 0.8)',
+                        borderWidth: 3,
+                        hoverOffset: 15
+                    }]
+                };
+
+                const programChart = new Chart(programChartCanvas, {
+                    type: 'doughnut',
+                    data: programData,
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false,
+                        cutout: '60%',
+                        plugins: { 
+                            legend: { 
+                                display: false 
+                            }, 
+                            tooltip: tooltipConfig 
+                        } 
+                    }
+                });
+                
+                const legendContainer = document.getElementById('program-legend');
+                programData.labels.forEach((label, i) => {
+                    const color = programData.datasets[0].backgroundColor[i];
+                    const legendItem = document.createElement('div');
+                    legendItem.classList.add('flex', 'items-center', 'cursor-pointer', 'p-1', 'rounded', 'transition-colors');
+                    legendItem.innerHTML = `<div class="w-3 h-3 rounded-sm mr-2" style="background-color: ${color}"></div><span>${label}</span>`;
+                    
+                    legendItem.onmouseenter = () => {
+                        programChart.setActiveElements([{ datasetIndex: 0, index: i }]);
+                        programChart.update();
+                        legendItem.style.backgroundColor = 'rgba(200, 200, 200, 0.3)';
+                    };
+                    legendItem.onmouseleave = () => {
+                         programChart.setActiveElements([]);
+                         programChart.update();
+                         legendItem.style.backgroundColor = 'transparent';
+                    };
+                    
+                    legendContainer.appendChild(legendItem);
+                });
+            }
+
+
+            if (document.getElementById('targetAudienceChart')) {
+                new Chart(document.getElementById('targetAudienceChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Berçário (0-1 ano)', 'Maternal I (2-3 anos)', 'Maternal II (4-5 anos)'],
+                        datasets: [{ label: 'Distribuição de Vagas', data: [30, 88, 70], backgroundColor: ['#28A745', '#20c997', '#6f42c1'], borderColor: '#ffffff', borderWidth: 2, hoverOffset: 8 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 15, padding: 15 } }, tooltip: tooltipConfig } }
+                });
+            }
+
+            const metricModal = document.getElementById('metricModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalCloseBtn = document.getElementById('modalCloseBtn');
+            const metricCards = document.querySelectorAll('.metric-card');
+            let modalChart = null;
+
+            const climateData = {
+                months: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"],
+                maxTemp: [31.6, 31.6, 31.8, 31.7, 30.4, 29.9, 30.2, 32.4, 34.2, 34.2, 33.2, 32.0],
+                minTemp: [22.5, 22.4, 22.3, 21.4, 19.1, 17.3, 16.8, 18.2, 20.6, 22.1, 22.4, 22.6],
+                humidity: [83, 84, 84, 82, 78, 75, 69, 61, 61, 69, 75, 80],
+                precip: [277, 238, 225, 114, 42, 14, 10, 19, 54, 129, 178, 234]
+            };
+
+            function showModalWithChart(metric) {
+                if (modalChart) {
+                    modalChart.destroy();
+                }
+
+                let chartConfig;
+                switch(metric) {
+                    case 'temp':
+                        chartConfig = {
+                            type: 'line',
+                            data: {
+                                labels: climateData.months,
+                                datasets: [
+                                    { label: 'Temperatura Máxima (°C)', data: climateData.maxTemp, borderColor: '#FF6B6B', backgroundColor: 'rgba(255, 107, 107, 0.2)', fill: true, tension: 0.4 },
+                                    { label: 'Temperatura Mínima (°C)', data: climateData.minTemp, borderColor: '#45B7D1', backgroundColor: 'rgba(69, 183, 209, 0.2)', fill: true, tension: 0.4 }
+                                ]
+                            },
+                            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom' } }, scales: { y: { beginAtZero: false, title: { display: true, text: 'Temperatura (°C)' } } } }
+                        };
+                        modalTitle.textContent = 'Variação Anual da Temperatura';
+                        break;
+                    case 'humidity':
+                        chartConfig = {
+                            type: 'line',
+                            data: {
+                                labels: climateData.months,
+                                datasets: [{ label: 'Umidade Relativa Média (%)', data: climateData.humidity, borderColor: '#45B7D1', backgroundColor: 'rgba(69, 183, 209, 0.2)', fill: true, tension: 0.4 }]
+                            },
+                            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 100, title: { display: true, text: 'Umidade (%)' } } } }
+                        };
+                        modalTitle.textContent = 'Variação Anual da Umidade Relativa';
+                        break;
+                    case 'precip':
+                        chartConfig = {
+                            type: 'bar',
+                            data: {
+                                labels: climateData.months,
+                                datasets: [{ label: 'Precipitação Média (mm)', data: climateData.precip, backgroundColor: '#56CCF2', borderRadius: 4 }]
+                            },
+                            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Precipitação (mm)'} } } }
+                        };
+                        modalTitle.textContent = 'Variação Anual da Precipitação';
+                        break;
+                }
+
+                modalChart = new Chart(document.getElementById('modalChartCanvas'), chartConfig);
+                metricModal.classList.add('active');
+            }
+
+            metricCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const metric = card.getAttribute('data-metric');
+                    showModalWithChart(metric);
+                });
+            });
+
+            const closeModal = () => {
+                metricModal.classList.remove('active');
+                if (modalChart) {
+                    modalChart.destroy();
+                    modalChart = null;
+                }
+            };
+
+            modalCloseBtn.addEventListener('click', closeModal);
+            metricModal.addEventListener('click', (e) => {
+                if (e.target === metricModal) {
+                    closeModal();
+                }
+            });
+            
+             const timelineBtns = document.querySelectorAll('.timeline-btn');
+            timelineBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const content = document.getElementById(btn.dataset.target);
+                    const icon = btn.querySelector('span:last-child');
+                    
+                    if (content.classList.contains('open')) {
+                        content.classList.remove('open');
+                        btn.classList.remove('active');
+                        icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        // Close other sections
+                        document.querySelectorAll('.timeline-content.open').forEach(openContent => {
+                            openContent.classList.remove('open');
+                            const openBtn = document.querySelector(`[data-target="${openContent.id}"]`);
+                            openBtn.classList.remove('active');
+                            openBtn.querySelector('span:last-child').style.transform = 'rotate(0deg)';
+                        });
+                        
+                        content.classList.add('open');
+                        btn.classList.add('active');
+                        icon.style.transform = 'rotate(45deg)';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
