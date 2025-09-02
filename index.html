@@ -75,6 +75,7 @@
         }
         .container-wrapper {
             flex-grow: 1;
+            padding-bottom: 100px; /* Footer height */
         }
         .nav-button {
             transition: all 0.3s ease;
@@ -156,6 +157,7 @@
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: inset 4px 4px 8px rgba(0,0,0,0.1), inset -4px -4px 8px rgba(255,255,255,0.8);
             border-radius: 1.5rem;
         }
          .metric-card {
@@ -311,7 +313,7 @@
             max-height: 500px; /* Adjust as needed */
             padding: 1rem 0 0 0;
         }
-        .footer {
+        .footer-glass {
             background-color: rgba(255, 255, 255, 0.6);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
@@ -350,7 +352,7 @@
 
     <div id="main-content" class="container-wrapper opacity-0 invisible transition-opacity duration-700">
         <div class="container mx-auto p-4 sm:p-6 lg:p-8">
-            <header class="liquid-glass p-6 mb-8 rounded-3xl">
+            <header class="p-6 mb-8 border-b border-gray-200">
                 <div class="flex justify-end items-center text-sm text-gray-600 mb-4">
                     <div class="text-right">
                         <p class="font-bold">Projeto de Arquitetura V</p>
@@ -405,6 +407,11 @@
                                 <p class="text-gray-600 font-semibold mt-1">Faixa Etária (Anos)</p>
                             </div>
                         </div>
+                    </div>
+                     <div class="glass-card p-6 mb-8">
+                        <h3 class="text-2xl font-bold text-center text-green-700 mb-4">Modelo de Referência: Proinfância Tipo B</h3>
+                        <p class="text-center text-gray-600 max-w-3xl mx-auto">Esta imagem ilustra o modelo arquitetônico padrão do FNDE que serve como base para o desenvolvimento do projeto acadêmico.</p>
+                        <img src="imagens/mod_proinf_T_B.png" alt="Modelo Proinfância Tipo B" class="rounded-lg shadow-lg w-full h-auto mt-4">
                     </div>
 
                     <div class="glass-card p-6 mb-8">
@@ -586,11 +593,11 @@
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                             <div>
                                 <h3 class="font-bold text-lg text-center mb-2">Vista do Terreno</h3>
-                                <img src="imagens/terreno.png" alt="Vista geral do terreno" class="rounded-lg shadow-lg w-full h-auto">
+                                <img src="https://storage.googleapis.com/gemini-prod-us-east1-955630392552/uploaded/terreno.png" alt="Vista geral do terreno" class="rounded-lg shadow-lg w-full h-auto">
                             </div>
                              <div>
                                 <h3 class="font-bold text-lg text-center mb-2">Entorno Urbano</h3>
-                                <img src="imagens/entorno do terreno.jpeg" alt="Vista do entorno urbano do terreno" class="rounded-lg shadow-lg w-full h-auto">
+                                <img src="https://storage.googleapis.com/gemini-prod-us-east1-955630392552/uploaded/entorno%20do%20terreno.jpeg" alt="Vista do entorno urbano do terreno" class="rounded-lg shadow-lg w-full h-auto">
                             </div>
                         </div>
                         <div>
@@ -601,6 +608,7 @@
                                     <ul class="list-disc list-inside mt-2 space-y-1">
                                         <li>Topografia predominantemente plana, facilitando a implantação.</li>
                                         <li>Boa dimensão, permitindo a correta disposição do programa.</li>
+                                        <li>Vegetação de médio porte existente que pode ser aproveitada no projeto paisagístico.</li>
                                         <li>Localizado em área urbana consolidada com infraestrutura.</li>
                                     </ul>
                                 </div>
